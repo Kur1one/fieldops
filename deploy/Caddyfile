@@ -1,0 +1,14 @@
+{$DOMAIN} {
+	encode zstd gzip
+	# части файлов до 5 МБ + запас
+	request_body {
+		max_size 12MB
+	}
+	header Strict-Transport-Security "max-age=31536000"
+	reverse_proxy app:3000 {
+		transport http {
+			read_timeout 5m
+			write_timeout 5m
+		}
+	}
+}

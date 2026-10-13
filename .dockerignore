@@ -1,0 +1,11 @@
+node_modules
+.next
+.data
+.git
+.env
+.env.local
+*.log
+dist-scripts
+public/sw.js
+Прототип
+tests

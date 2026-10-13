@@ -1,0 +1,30 @@
+# Запуск на виртуальной машине Yandex Cloud: приложение + Caddy (HTTPS-сертификат автоматически).
+# База — Yandex Managed PostgreSQL, файлы — Yandex Object Storage (настройки в .env).
+services:
+  app:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      NODE_ENV: production
+    expose:
+      - "3000"
+
+  caddy:
+    image: caddy:2.10
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      DOMAIN: ${DOMAIN:?укажите DOMAIN в .env}
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - app
+
+volumes:
+  caddy_data:
+  caddy_config:

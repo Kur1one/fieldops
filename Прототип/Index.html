@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html>
+<head>
+<base target="_top">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root { --c:#1a73e8; --bg:#f1f3f4; --card:#fff; --text:#202124; --muted:#5f6368; --err:#d93025; --ok:#188038; --line:#dadce0; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font:16px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; }
+  main, #done { max-width:640px; margin:0 auto; padding:12px 12px 40px; }
+  h1 { font-size:22px; margin:8px 4px 12px; }
+  h2 { font-size:17px; margin:0 0 10px; }
+  section { background:var(--card); border-radius:12px; padding:14px; margin-bottom:12px; box-shadow:0 1px 2px rgba(0,0,0,.08); }
+  label, .label { display:block; font-size:14px; color:var(--muted); margin:10px 0 4px; }
+  input, select, textarea { width:100%; font-size:16px; padding:10px; border:1px solid var(--line); border-radius:8px; background:#fff; color:var(--text); font-family:inherit; margin-top:4px; }
+  textarea { resize:vertical; }
+  input:focus, select:focus, textarea:focus { outline:2px solid var(--c); border-color:transparent; }
+  input[readonly] { background:#f1f3f4; color:var(--text); }
+  .bad { border-color:var(--err) !important; background:#fce8e6; }
+  button { font:inherit; cursor:pointer; border:none; border-radius:8px; }
+  .big { width:100%; padding:14px; font-size:17px; font-weight:600; background:var(--c); color:#fff; }
+  .big:disabled { opacity:.6; }
+  .secondary { width:100%; padding:12px; background:#e8f0fe; color:var(--c); font-weight:600; margin-top:8px; }
+  .secondary:disabled { opacity:.5; }
+  .link { background:none; color:var(--c); padding:4px 0; }
+  .danger { color:var(--err); }
+  .stamp { margin-top:8px; font-size:14px; }
+  .stamp .ok { color:var(--ok); font-weight:600; }
+  .stamp .warn { color:var(--err); }
+  .radios label { display:flex; align-items:center; gap:10px; color:var(--text); font-size:16px; padding:10px; border:1px solid var(--line); border-radius:8px; margin:6px 0; }
+  .radios input { width:auto; margin:0; }
+
+  /* поле с поиском */
+  .combo { position:relative; }
+  .combo input { padding-right:40px; }
+  .combo .clr { position:absolute; right:6px; top:50%; transform:translateY(-40%); width:30px; height:30px; background:none; color:var(--muted); font-size:20px; padding:0; }
+  .combo-list { position:absolute; left:0; right:0; top:calc(100% + 2px); z-index:20; background:#fff; border:1px solid var(--line); border-radius:8px; max-height:300px; overflow-y:auto; box-shadow:0 4px 14px rgba(0,0,0,.15); }
+  .combo-item { padding:10px 12px; border-bottom:1px solid #f1f3f4; font-size:15px; cursor:pointer; }
+  .combo-item:active, .combo-item:hover { background:#e8f0fe; }
+  .combo-item small { display:block; color:var(--muted); font-size:12px; margin-top:2px; }
+  .combo-more { padding:10px 12px; font-size:13px; color:var(--muted); }
+  .ticket-card { background:#e8f0fe; border-radius:8px; padding:8px 10px; margin-top:6px; font-size:14px; }
+
+  .device { border:1px solid var(--line); border-radius:10px; padding:10px; margin-bottom:10px; }
+  .dev-head { display:flex; justify-content:space-between; align-items:center; }
+  .grid { display:grid; grid-template-columns:1fr 1fr; gap:0 10px; }
+  .grid label { margin-top:8px; }
+  .wide { grid-column:1 / -1; }
+  .sub { font-size:13px; font-weight:600; color:var(--text); margin-top:10px; }
+  .old { background:#fef7e0; border-radius:8px; padding:4px 10px 10px; margin-top:10px; }
+  .dev-err { color:var(--err); font-size:13px; }
+  .files { display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
+  .thumb { position:relative; width:84px; height:84px; border-radius:8px; overflow:hidden; background:#ddd; }
+  .thumb img { width:100%; height:100%; object-fit:cover; }
+  .thumb .x, .vid .x { position:absolute; top:2px; right:2px; width:24px; height:24px; border-radius:12px; background:rgba(0,0,0,.6); color:#fff; font-size:14px; line-height:24px; padding:0; }
+  .thumb .up { position:absolute; bottom:2px; left:2px; background:var(--ok); color:#fff; font-size:11px; padding:1px 5px; border-radius:6px; }
+  .vid { position:relative; width:100%; padding:10px 34px 10px 10px; background:#f8f9fa; border:1px solid var(--line); border-radius:8px; font-size:14px; }
+  .filebtn { display:inline-block; padding:10px 14px; background:#e8f0fe; color:var(--c); font-weight:600; border-radius:8px; font-size:15px; margin-top:4px; }
+  .filebtn input { display:none; }
+  .hint { font-size:13px; color:var(--muted); margin-top:4px; }
+  .note { background:#fef7e0; border-radius:10px; padding:10px 12px; margin-bottom:12px; font-size:14px; }
+  .offline { background:#fce8e6; color:var(--err); }
+  .errors { background:#fce8e6; color:var(--err); border-radius:10px; padding:10px 14px; margin-bottom:12px; font-size:14px; }
+  .errors ul { margin:4px 0 0; padding-left:18px; }
+  .bar { height:10px; background:#e0e0e0; border-radius:5px; overflow:hidden; margin-top:12px; }
+  #barFill { height:100%; width:0; background:var(--c); transition:width .2s; }
+  #progressText { font-size:14px; color:var(--muted); margin-top:6px; }
+  .hidden { display:none !important; }
+  #done section { text-align:center; padding:30px 16px; }
+  #done .big { margin-top:16px; }
+</style>
+</head>
+<body>
+<main id="form">
+  <h1>Отчёт о выезде</h1>
+  <div id="offlineNote" class="note offline hidden">Нет связи. Заполнять можно, всё сохраняется в черновик. Отправите, когда появится интернет.</div>
+  <div id="draftNote" class="note hidden">
+    Восстановлен незаконченный отчёт. Фото и видео, если вы их прикрепляли, нужно выбрать заново.
+    <button type="button" class="link" id="newBtn">Начать новый отчёт</button>
+  </div>
+
+  <section>
+    <h2>Сотрудник</h2>
+    <label>ФИО *<input id="fio" autocomplete="name"></label>
+    <div class="hint" id="fioHint"></div>
+  </section>
+
+  <section>
+    <h2>Объект</h2>
+    <div class="label">Заявка</div>
+    <div class="combo">
+      <input id="ticket" autocomplete="off" placeholder="Поиск: номер, объект или задача">
+      <button type="button" class="clr" data-clear="ticket">×</button>
+      <div id="ticketList" class="combo-list hidden"></div>
+    </div>
+    <div id="ticketInfo"></div>
+
+    <div class="label">Город *</div>
+    <div class="combo">
+      <input id="city" autocomplete="off" placeholder="Начните вводить город">
+      <button type="button" class="clr" data-clear="city">×</button>
+      <div id="cityList" class="combo-list hidden"></div>
+    </div>
+
+    <div class="label">Объект *</div>
+    <div class="combo">
+      <input id="object" autocomplete="off" placeholder="Начните вводить название">
+      <button type="button" class="clr" data-clear="object">×</button>
+      <div id="objectList" class="combo-list hidden"></div>
+    </div>
+    <div class="hint" id="objHint"></div>
+
+    <label>Адрес *<textarea id="address" rows="2"></textarea></label>
+    <div class="hint" id="refsNote"></div>
+  </section>
+
+  <section>
+    <h2>Прибытие</h2>
+    <button type="button" class="big" id="arrivalBtn">Я на объекте</button>
+    <div class="hint">Отметит время и геолокацию. Разрешите доступ к местоположению, если телефон спросит.</div>
+    <div class="stamp" id="arrivalInfo"></div>
+  </section>
+
+  <section>
+    <h2>Задача</h2>
+    <label>Описание проблемы / задачи *<textarea id="task" rows="3"></textarea></label>
+    <div class="label">Фото до начала работ</div>
+    <label class="filebtn">+ Добавить фото<input type="file" accept="image/*" multiple id="beforeInput"></label>
+    <div class="files" id="beforeFiles"></div>
+  </section>
+
+  <section>
+    <h2>Устройства <span id="devCount"></span></h2>
+    <div id="devices"></div>
+    <button type="button" class="secondary" id="addDev">+ Добавить устройство</button>
+  </section>
+
+  <section>
+    <h2>Результат</h2>
+    <label>Отчёт о проделанной работе *<textarea id="report" rows="4"></textarea></label>
+    <label>Использованные материалы и оборудование<textarea id="materials" rows="2"></textarea></label>
+    <div class="label">Статус работ *</div>
+    <div class="radios" id="statusBox">
+      <label><input type="radio" name="status" value="Выполнено полностью">Выполнено полностью</label>
+      <label><input type="radio" name="status" value="Выполнено частично">Выполнено частично</label>
+      <label><input type="radio" name="status" value="Требуется повторный выезд">Требуется повторный выезд</label>
+    </div>
+    <label>Представитель заказчика (ФИО, должность)<input id="customerRep"></label>
+    <div class="label">Фото после работ</div>
+    <label class="filebtn">+ Добавить фото<input type="file" accept="image/*" multiple id="afterInput"></label>
+    <div class="files" id="afterFiles"></div>
+    <div class="label">Видео (каждое до 50 МБ)</div>
+    <label class="filebtn">+ Добавить видео<input type="file" accept="video/*" multiple id="videoInput"></label>
+    <div class="files" id="videoFiles"></div>
+  </section>
+
+  <section>
+    <h2>Завершение</h2>
+    <button type="button" class="big" id="finishBtn">Работы завершены</button>
+    <div class="stamp" id="finishInfo"></div>
+    <label>Комментарий (проблемы, конфликт с проектом)<textarea id="comment" rows="3"></textarea></label>
+  </section>
+
+  <div id="errors" class="errors hidden"></div>
+  <button type="button" class="big" id="sendBtn">Отправить отчёт</button>
+  <div id="progress" class="hidden">
+    <div class="bar"><div id="barFill"></div></div>
+    <div id="progressText"></div>
+  </div>
+</main>
+
+<div id="done" class="hidden">
+  <section>
+    <h2>Отчёт отправлен</h2>
+    <div id="doneText" class="hint"></div>
+    <button type="button" class="big" id="againBtn">Новый отчёт</button>
+  </section>
+</div>
+
+<script>
+const MAX_DEVICES = 50;
+const MAX_VIDEO = 50 * 1024 * 1024;
+const MAX_PHOTOS = 30;
+const CHUNK = 4 * 1024 * 1024; // кратно 256 КБ — требование Google Диска
+const DEVICE_TYPES = ['Камера', 'Терминал', 'Коммутатор', 'Регистратор', 'Точка доступа', 'Другое'];
+const ACTIONS = ['Установлено', 'Настроено', 'Заменено', 'Демонтировано', 'Проверено / диагностика'];
+const TEXT_FIELDS = ['fio', 'ticket', 'city', 'object', 'address', 'task', 'report', 'materials', 'customerRep', 'comment'];
+const DRAFT_KEY = 'vyezd_draft_v2';
+const FIO_KEY = 'vyezd_fio';
+const REFS_KEY = 'vyezd_refs_v1';
+const IP_RE = /^(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}$/;
+const MAC_RE = /^([0-9A-Fa-f]{2}[:-]){5}[0-9A-Fa-f]{2}$/;
+const FILE_LABEL = { before: 'до', after: 'после', video: 'видео' };
+
+const $ = id => document.getElementById(id);
+let state;
+let refs = { cities: [], objects: [], tickets: [] };
+let sending = false;
+
+function freshState() {
+  return { reportId: newId(), arrival: null, finish: null, devices: [], files: { before: [], after: [], video: [] }, folderUrl: null };
+}
+
+function newId() {
+  const d = new Date(), p = n => String(n).padStart(2, '0');
+  return d.getFullYear() + p(d.getMonth() + 1) + p(d.getDate()) + '-' + p(d.getHours()) + p(d.getMinutes()) +
+    '-' + Math.random().toString(36).slice(2, 6).toUpperCase();
+}
+
+function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]); }
+function norm(s) { return String(s || '').toLowerCase().replace(/ё/g, 'е').replace(/[.,\-_/()«»"]+/g, ' ').replace(/\s+/g, ' ').trim(); }
+
+/* ---------- хранилище ---------- */
+function store(k, v) { try { v === null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch (e) {} }
+function load(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+
+function getStatus() { const r = document.querySelector('input[name=status]:checked'); return r ? r.value : ''; }
+function setStatus(v) { document.querySelectorAll('input[name=status]').forEach(r => r.checked = r.value === v); }
+
+function saveDraft() {
+  const data = { reportId: state.reportId, arrival: state.arrival, finish: state.finish, devices: state.devices, status: getStatus(), fields: {} };
+  TEXT_FIELDS.forEach(f => data.fields[f] = $(f).value);
+  store(DRAFT_KEY, JSON.stringify(data));
+  store(FIO_KEY, $('fio').value);
+}
+
+function restoreDraft() {
+  const fio = load(FIO_KEY);
+  if (fio) $('fio').value = fio;
+  const raw = load(DRAFT_KEY);
+  if (!raw) return;
+  try {
+    const d = JSON.parse(raw);
+    state.reportId = d.reportId || state.reportId;
+    state.arrival = d.arrival || null;
+    state.finish = d.finish || null;
+    state.devices = Array.isArray(d.devices) ? d.devices : [];
+    TEXT_FIELDS.forEach(f => { if (d.fields && d.fields[f] != null) $(f).value = d.fields[f]; });
+    setStatus(d.status || '');
+    const hasContent = state.arrival || state.devices.length ||
+      ['ticket', 'city', 'object', 'address', 'task', 'report', 'comment'].some(f => d.fields && d.fields[f]);
+    if (hasContent) $('draftNote').classList.remove('hidden');
+  } catch (e) {}
+}
+
+/* ---------- справочники ---------- */
+function loadRefsCache() {
+  try { const r = JSON.parse(load(REFS_KEY) || 'null'); if (r && r.objects) refs = r; } catch (e) {}
+}
+
+let refsError = '';
+function refreshRefs() {
+  if (!refs.objects.length) { $('refsNote').textContent = 'Загружаю справочники…'; refsError = 'ещё загружается, подождите пару секунд'; }
+  run('getRefs').then(r => {
+    refs = r;
+    refsError = '';
+    applyMe();
+    store(REFS_KEY, JSON.stringify(r));
+    $('refsNote').textContent = '';
+    renderTicketInfo();
+    updateObjHint();
+  }).catch(e => {
+    refsError = e && e.message ? e.message : String(e);
+    $('refsNote').textContent = refs.objects.length
+      ? 'Справочники не обновились (нет связи?) — используется сохранённая копия.'
+      : 'Не удалось загрузить справочники: ' + (e && e.message ? e.message : e) + '. Город и объект можно вписать вручную.';
+  });
+}
+
+// ФИО по корпоративной почте
+function applyMe() {
+  const me = refs.me || {};
+  const fio = $('fio'), hint = $('fioHint');
+  if (me.fio) {
+    fio.value = me.fio;
+    fio.readOnly = true;
+    hint.textContent = 'Определено по почте ' + me.email;
+    store(FIO_KEY, me.fio);
+  } else {
+    fio.readOnly = false;
+    hint.textContent = me.email
+      ? 'Почта ' + me.email + ' не найдена в списке сотрудников — введите ФИО вручную и сообщите руководителю.'
+      : '';
+  }
+}
+
+function knownCity(s) { const k = norm(s); return refs.cities.find(c => norm(c) === k) || ''; }
+function currentCity() { return knownCity($('city').value) || $('city').value.trim(); }
+function findObj(name) { const k = norm(name); return refs.objects.find(o => norm(o.n) === k); }
+function findTicket(id) { const k = String(id || '').trim().toUpperCase(); return refs.tickets.find(t => t.id.toUpperCase() === k); }
+
+/* ---------- поле с быстрым поиском ---------- */
+function makeCombo(id, getItems, onPick, emptyText) {
+  const inp = $(id), box = $(id + 'List'), wrap = inp.closest('.combo');
+  let typed = false;
+  function show() {
+    const words = typed ? norm(inp.value).split(' ').filter(Boolean) : [];
+    const list = getItems().filter(it => words.every(w => it.key.indexOf(w) >= 0));
+    const shown = list.slice(0, 60);
+    box.innerHTML = shown.map((it, i) =>
+      '<div class="combo-item" data-i="' + i + '">' + esc(it.label) + (it.sub ? '<small>' + esc(it.sub) + '</small>' : '') + '</div>').join('') +
+      (list.length > shown.length ? '<div class="combo-more">… ещё ' + (list.length - shown.length) + ', уточните поиск</div>' : '') +
+      (!list.length ? '<div class="combo-more">' + esc(typeof emptyText === 'function' ? emptyText() : emptyText) + '</div>' : '');
+    box.querySelectorAll('[data-i]').forEach(el => el.onclick = () => { onPick(shown[+el.dataset.i]); hide(); });
+    box.classList.remove('hidden');
+    box.scrollTop = 0;
+  }
+  function hide() { box.classList.add('hidden'); typed = false; }
+  inp.addEventListener('focus', () => { typed = false; show(); setTimeout(() => inp.select(), 0); });
+  inp.addEventListener('input', () => { typed = true; show(); });
+  inp.addEventListener('keydown', e => {
+    if (e.key === 'Escape') hide();
+    if (e.key === 'Enter') { e.preventDefault(); const f = box.querySelector('[data-i]'); if (f && !box.classList.contains('hidden')) f.click(); }
+  });
+  const outside = e => { if (!wrap.contains(e.target)) hide(); };
+  document.addEventListener('click', outside);
+  document.addEventListener('touchstart', outside, { passive: true });
+  return { show, hide };
+}
+
+// город и объект выбираются независимо друг от друга
+function cityItems() {
+  return refs.cities.map(c => ({ value: c, label: c, sub: '', key: norm(c) }));
+}
+
+function objectItems() {
+  return refs.objects.map(o => ({ value: o, label: o.n, sub: o.a || '', key: norm(o.n + ' ' + o.a) }));
+}
+
+function isMine(t) { const me = norm($('fio').value); return !!me && norm(t.ex) === me; }
+
+function ticketItems() {
+  // назначенные этому сотруднику — первыми
+  const list = refs.tickets.slice().sort((a, b) => isMine(b) - isMine(a));
+  return list.map(t => ({
+    value: t,
+    label: (isMine(t) ? '★ ' : '') + t.id + ' · ' + (t.o || 'без объекта'),
+    sub: [isMine(t) ? 'назначена вам' : '', t.c, t.p && t.p !== 'Обычный' ? t.p : '', t.s, t.d ? 'план: ' + t.d : '', (t.t || '').slice(0, 90)].filter(Boolean).join(' · '),
+    key: norm(t.id + ' ' + t.o + ' ' + t.c + ' ' + t.t),
+  }));
+}
+
+function pickTicket(t) {
+  $('ticket').value = t.id;
+  if (t.c) $('city').value = t.c;
+  if (t.o) $('object').value = t.o;
+  const o = findObj(t.o);
+  if (!$('address').value.trim()) $('address').value = t.a || (o && o.a) || '';
+  if (t.t && !$('task').value.trim()) $('task').value = t.t;
+  afterChange();
+}
+
+function pickCity(c) {
+  $('city').value = c;
+  onCityChanged();
+}
+
+function pickObject(o) {
+  $('object').value = o.n;
+  if (o.a && !$('address').value.trim()) $('address').value = o.a;
+  afterChange();
+}
+
+function onCityChanged() {
+  const city = knownCity($('city').value);
+  if (city) $('city').value = city;
+  afterChange();
+}
+
+function afterChange() {
+  renderTicketInfo();
+  updateObjHint();
+  saveDraft();
+}
+
+function renderTicketInfo() {
+  const v = $('ticket').value.trim();
+  const box = $('ticketInfo');
+  if (!v) { box.innerHTML = '<div class="hint">Если выезд по заявке — выберите её, остальное подставится само.</div>'; return; }
+  const t = findTicket(v);
+  if (!t) { box.innerHTML = '<div class="hint">Заявка «' + esc(v) + '» не найдена среди открытых. Проверьте номер.</div>'; return; }
+  box.innerHTML = '<div class="ticket-card"><b>' + esc(t.id) + '</b> · ' + esc(t.s) + (t.p ? ' · ' + esc(t.p) : '') +
+    (t.d ? '<br>План: ' + esc(t.d) : '') + (t.ex ? '<br>Исполнитель: ' + esc(t.ex) : '') +
+    (t.t ? '<br>' + esc(t.t) : '') + '</div>';
+}
+
+function updateObjHint() {
+  const v = $('object').value.trim();
+  $('objHint').textContent = v && refs.objects.length && !findObj(v)
+    ? 'Объекта нет в справочнике — будет записан как введён.' : '';
+}
+
+/* ---------- время и геометка ---------- */
+function getGeo() {
+  return new Promise(resolve => {
+    if (!navigator.geolocation) return resolve({ error: 'телефон не поддерживает геолокацию' });
+    navigator.geolocation.getCurrentPosition(
+      p => resolve({ lat: +p.coords.latitude.toFixed(6), lng: +p.coords.longitude.toFixed(6), acc: Math.round(p.coords.accuracy) }),
+      e => resolve({ error: ({ 1: 'доступ к геолокации запрещён', 2: 'местоположение недоступно', 3: 'не успели определить' })[e.code] || e.message }),
+      { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 });
+  });
+}
+
+function fmt(iso) {
+  const d = new Date(iso), p = n => String(n).padStart(2, '0');
+  return p(d.getDate()) + '.' + p(d.getMonth() + 1) + '.' + d.getFullYear() + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
+}
+
+async function stamp(which) {
+  if (which === 'finish' && !state.arrival) { alert('Сначала отметьте приезд на объект.'); return; }
+  if (state[which] && !confirm('Время уже отмечено (' + fmt(state[which].time) + '). Отметить заново?')) return;
+  const btn = $(which + 'Btn');
+  btn.disabled = true;
+  btn.textContent = 'Определяю местоположение…';
+  const time = new Date().toISOString();
+  const geo = await getGeo();
+  state[which] = { time, geo };
+  btn.disabled = false;
+  renderStamp(which);
+  saveDraft();
+}
+
+async function retryGeo(which) {
+  $(which + 'Info').textContent = 'Определяю местоположение…';
+  state[which].geo = await getGeo();
+  renderStamp(which);
+  saveDraft();
+}
+
+function renderStamp(which) {
+  const s = state[which];
+  const btn = $(which + 'Btn'), info = $(which + 'Info');
+  btn.textContent = which === 'arrival' ? 'Я на объекте' : 'Работы завершены';
+  if (!s) { info.innerHTML = ''; return; }
+  let html = '<span class="ok">Отмечено: ' + fmt(s.time) + '</span><br>';
+  if (s.geo && s.geo.lat != null) {
+    html += 'Геометка: <a href="https://maps.google.com/?q=' + s.geo.lat + ',' + s.geo.lng + '" target="_blank">' +
+      s.geo.lat + ', ' + s.geo.lng + '</a> (±' + s.geo.acc + ' м)';
+  } else {
+    html += '<span class="warn">Геометка не получена: ' + esc(s.geo && s.geo.error || 'ошибка') + '.</span> ' +
+      '<button type="button" class="link" data-retry="' + which + '">Повторить</button>';
+  }
+  info.innerHTML = html;
+  const r = info.querySelector('[data-retry]');
+  if (r) r.onclick = () => retryGeo(which);
+}
+
+/* ---------- устройства ---------- */
+function opts(list, sel) {
+  return '<option value="">— выберите —</option>' +
+    list.map(v => '<option' + (v === sel ? ' selected' : '') + '>' + esc(v) + '</option>').join('');
+}
+function inp(f, label, d, attrs) {
+  return '<label>' + label + '<input data-f="' + f + '" value="' + esc(d[f]) + '"' + (attrs || '') + '></label>';
+}
+
+function renderDevices() {
+  const box = $('devices');
+  box.innerHTML = '';
+  state.devices.forEach((d, i) => {
+    const repl = d.action === 'Заменено';
+    const el = document.createElement('div');
+    el.className = 'device';
+    el.innerHTML =
+      '<div class="dev-head"><b>Устройство ' + (i + 1) + '</b><button type="button" class="link danger" data-del>Удалить</button></div>' +
+      '<div class="grid">' +
+      '<label>Тип *<select data-f="type">' + opts(DEVICE_TYPES, d.type) + '</select></label>' +
+      '<label>Действие<select data-f="action">' + opts(ACTIONS, d.action) + '</select></label>' +
+      '<div class="wide sub" data-newlabel>' + (repl ? 'Новое (установленное) устройство' : '') + '</div>' +
+      inp('ip', 'IP-адрес *', d, ' inputmode="decimal" placeholder="192.168.1.10"') +
+      inp('model', 'Модель', d) +
+      inp('mac', 'MAC', d, ' placeholder="AA:BB:CC:DD:EE:FF"') +
+      inp('sn', 'Серийный №', d) +
+      '<div class="wide">' + inp('place', 'Место установки', d, ' placeholder="3 этаж, коридор"') + '</div>' +
+      '</div>' +
+      '<div class="old' + (repl ? '' : ' hidden') + '"><div class="sub">Снятое (старое) устройство</div><div class="grid">' +
+      inp('oldIp', 'Старый IP *', d, ' inputmode="decimal" placeholder="192.168.1.10"') +
+      inp('oldModel', 'Старая модель', d) +
+      inp('oldMac', 'Старый MAC', d, ' placeholder="AA:BB:CC:DD:EE:FF"') +
+      inp('oldSn', 'Старый серийный №', d) +
+      '</div></div>' +
+      '<div class="dev-err"></div>';
+    el.querySelectorAll('[data-f]').forEach(field => {
+      const f = field.dataset.f;
+      const upd = () => {
+        if (f === 'ip' || f === 'oldIp') { const v = field.value.replace(/,/g, '.').replace(/\s/g, ''); if (v !== field.value) field.value = v; }
+        d[f] = field.value;
+        if (f === 'action') {
+          const r = d.action === 'Заменено';
+          el.querySelector('.old').classList.toggle('hidden', !r);
+          el.querySelector('[data-newlabel]').textContent = r ? 'Новое (установленное) устройство' : '';
+        }
+        saveDraft();
+      };
+      field.addEventListener('input', upd);
+      field.addEventListener('change', upd);
+      if (/ip|mac/i.test(f)) field.addEventListener('blur', () => validateDevices(false));
+    });
+    el.querySelector('[data-del]').onclick = () => {
+      if (!confirm('Удалить устройство ' + (i + 1) + '?')) return;
+      state.devices.splice(i, 1);
+      renderDevices();
+      saveDraft();
+    };
+    box.appendChild(el);
+  });
+  $('devCount').textContent = state.devices.length ? '(' + state.devices.length + ' из ' + MAX_DEVICES + ')' : '';
+  $('addDev').disabled = state.devices.length >= MAX_DEVICES;
+}
+
+function addDevice() {
+  if (state.devices.length >= MAX_DEVICES) return;
+  const last = state.devices[state.devices.length - 1];
+  state.devices.push({ type: last ? last.type : '', action: last ? last.action : '', ip: '', model: '', mac: '', sn: '', place: '',
+    oldIp: '', oldModel: '', oldMac: '', oldSn: '' });
+  renderDevices();
+  saveDraft();
+  const el = $('devices').lastElementChild;
+  el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  el.querySelector('[data-f=ip]').focus();
+}
+
+// возвращает список ошибок и подсвечивает поля
+function validateDevices(strict) {
+  const errs = [];
+  const seen = {};
+  state.devices.forEach(d => { const ip = (d.ip || '').trim(); if (ip) seen[ip] = (seen[ip] || 0) + 1; });
+  [...$('devices').children].forEach((el, i) => {
+    const d = state.devices[i], msgs = [];
+    const repl = d.action === 'Заменено';
+    const ip = (d.ip || '').trim(), mac = (d.mac || '').trim();
+    const oldIp = (d.oldIp || '').trim(), oldMac = (d.oldMac || '').trim();
+    const mark = (f, bad) => el.querySelector('[data-f=' + f + ']').classList.toggle('bad', !!bad);
+
+    const typeBad = strict && !d.type;
+    if (typeBad) msgs.push('не выбран тип');
+    let ipBad = false;
+    if (strict && !ip) { msgs.push('не указан IP'); ipBad = true; }
+    else if (ip && !IP_RE.test(ip)) { msgs.push('неверный формат IP'); ipBad = true; }
+    else if (ip && seen[ip] > 1) { msgs.push('IP повторяется'); ipBad = true; }
+    const macBad = mac && !MAC_RE.test(mac);
+    if (macBad) msgs.push('неверный формат MAC');
+
+    let oldIpBad = false, oldMacBad = false;
+    if (repl) {
+      if (strict && !oldIp) { msgs.push('не указан IP снятого устройства'); oldIpBad = true; }
+      else if (oldIp && !IP_RE.test(oldIp)) { msgs.push('неверный формат старого IP'); oldIpBad = true; }
+      oldMacBad = oldMac && !MAC_RE.test(oldMac);
+      if (oldMacBad) msgs.push('неверный формат старого MAC');
+    }
+    mark('type', typeBad); mark('ip', ipBad); mark('mac', macBad); mark('oldIp', oldIpBad); mark('oldMac', oldMacBad);
+    el.querySelector('.dev-err').textContent = msgs.join(', ');
+    if (msgs.length) errs.push('Устройство ' + (i + 1) + ': ' + msgs.join(', '));
+  });
+  return errs;
+}
+
+/* ---------- фото и видео ---------- */
+function compress(file) {
+  return new Promise(resolve => {
+    if (!file.type.startsWith('image/')) return resolve(file);
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      const k = Math.min(1, 1920 / Math.max(img.naturalWidth, img.naturalHeight));
+      const c = document.createElement('canvas');
+      c.width = Math.round(img.naturalWidth * k);
+      c.height = Math.round(img.naturalHeight * k);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      URL.revokeObjectURL(url);
+      c.toBlob(b => resolve(b && b.size < file.size ? b : file), 'image/jpeg', 0.85);
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); resolve(file); };
+    img.src = url;
+  });
+}
+
+function mb(n) { return (n / 1024 / 1024).toFixed(1) + ' МБ'; }
+
+function setupFileInput(key) {
+  $(key + 'Input').addEventListener('change', async e => {
+    const list = [...e.target.files];
+    e.target.value = '';
+    for (const f of list) {
+      if (!f.size) continue;
+      if (key === 'video') {
+        if (f.size > MAX_VIDEO) { alert('Видео «' + f.name + '» весит ' + mb(f.size) + ', а можно до 50 МБ. Снимите короче или сожмите.'); continue; }
+        state.files.video.push({ name: f.name, blob: f, type: f.type || 'video/mp4' });
+      } else {
+        if (state.files[key].length >= MAX_PHOTOS) { alert('Не больше ' + MAX_PHOTOS + ' фото в одном блоке.'); break; }
+        const b = await compress(f);
+        state.files[key].push({ name: f.name, blob: b, type: b.type || f.type || 'image/jpeg', thumb: URL.createObjectURL(b) });
+      }
+      renderFiles(key);
+    }
+  });
+}
+
+function renderFiles(key) {
+  const box = $(key + 'Files');
+  box.innerHTML = '';
+  state.files[key].forEach((f, i) => {
+    const el = document.createElement('div');
+    if (key === 'video') {
+      el.className = 'vid';
+      el.textContent = f.name + ' — ' + mb(f.blob.size) + (f.url ? ' ✓ загружено' : '');
+    } else {
+      el.className = 'thumb';
+      el.innerHTML = '<img src="' + f.thumb + '">' + (f.url ? '<span class="up">✓</span>' : '');
+    }
+    if (!sending) {
+      const x = document.createElement('button');
+      x.type = 'button'; x.className = 'x'; x.textContent = '×';
+      x.onclick = () => { if (f.thumb) URL.revokeObjectURL(f.thumb); state.files[key].splice(i, 1); renderFiles(key); };
+      el.appendChild(x);
+    }
+    box.appendChild(el);
+  });
+}
+
+/* ---------- отправка ---------- */
+function run(fn, ...args) {
+  return new Promise((res, rej) => google.script.run.withSuccessHandler(res).withFailureHandler(rej)[fn](...args));
+}
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+function toB64(blob) {
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => res(String(r.result).split(',')[1] || '');
+    r.onerror = () => rej(r.error);
+    r.readAsDataURL(blob);
+  });
+}
+
+function validate() {
+  const errs = [];
+  const names = { fio: 'ФИО', city: 'Город', object: 'Объект', address: 'Адрес', task: 'Описание задачи', report: 'Отчёт о работе' };
+  Object.keys(names).forEach(k => {
+    const bad = !$(k).value.trim();
+    $(k).classList.toggle('bad', bad);
+    if (bad) errs.push('Заполните «' + names[k] + '»');
+  });
+  if (!state.arrival) errs.push('Нажмите «Я на объекте»');
+  if (!state.finish) errs.push('Нажмите «Работы завершены»');
+  if (state.arrival && state.finish && new Date(state.finish.time) < new Date(state.arrival.time)) errs.push('Время завершения раньше времени приезда');
+  if (!getStatus()) errs.push('Выберите статус работ');
+  return errs.concat(validateDevices(true));
+}
+
+function showErrors(list) {
+  const box = $('errors');
+  if (!list.length) { box.classList.add('hidden'); return; }
+  box.innerHTML = '<b>Нужно исправить:</b><ul>' + list.map(e => '<li>' + esc(e) + '</li>').join('') + '</ul>';
+  box.classList.remove('hidden');
+  box.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function setProgress(frac, text) {
+  $('barFill').style.width = Math.round(frac * 100) + '%';
+  $('progressText').textContent = text;
+}
+
+function folderName() {
+  const d = state.arrival ? new Date(state.arrival.time) : new Date(), p = n => String(n).padStart(2, '0');
+  const t = $('ticket').value.trim();
+  return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) + ' ' + (t ? t + ' ' : '') +
+    $('object').value.trim() + ' (' + state.reportId + ')';
+}
+
+async function uploadFile(f, name, onProgress) {
+  const total = f.blob.size;
+  const s = await run('startUpload', state.reportId, folderName(), name, f.type, total);
+  state.folderUrl = s.folderUrl;
+  let offset = 0, tries = 0;
+  while (true) {
+    try {
+      const b64 = await toB64(f.blob.slice(offset, Math.min(offset + CHUNK, total)));
+      const r = await run('uploadChunk', s.sessionUrl, b64, offset, total);
+      tries = 0;
+      if (r.done) { onProgress(total); return r.url; }
+      offset = r.next;
+      onProgress(offset);
+    } catch (e) {
+      if (++tries > 5) throw e;
+      $('progressText').textContent = 'Связь пропала, пробую снова (' + tries + ' из 5)…';
+      await sleep(3000 * tries);
+      try {
+        const st = await run('getUploadStatus', s.sessionUrl, total);
+        if (st.done) { onProgress(total); return st.url; }
+        offset = st.next;
+      } catch (_) {}
+    }
+  }
+}
+
+function extOf(f) {
+  if (f.type === 'image/jpeg') return '.jpg';
+  const m = /\.[A-Za-z0-9]{2,5}$/.exec(f.name || '');
+  return m ? m[0].toLowerCase() : '';
+}
+
+async function send() {
+  if (sending) return;
+  const city = knownCity($('city').value);
+  if (city) $('city').value = city;
+  $('ticket').value = $('ticket').value.trim().toUpperCase();
+  const errs = validate();
+  showErrors(errs);
+  if (errs.length) return;
+  if (!navigator.onLine) { showErrors(['Нет подключения к интернету. Черновик сохранён — нажмите «Отправить», когда появится связь.']); return; }
+
+  sending = true;
+  $('sendBtn').disabled = true;
+  $('progress').classList.remove('hidden');
+  ['before', 'after', 'video'].forEach(renderFiles);
+
+  try {
+    const queue = [];
+    ['before', 'after', 'video'].forEach(key => state.files[key].forEach((f, i) => {
+      if (!f.url) queue.push({ key, f, name: FILE_LABEL[key] + '_' + String(i + 1).padStart(2, '0') + extOf(f) });
+    }));
+    const totalBytes = queue.reduce((s, q) => s + q.f.blob.size, 0) || 1;
+    let doneBytes = 0;
+    for (let n = 0; n < queue.length; n++) {
+      const q = queue[n];
+      const label = 'Загружаю файл ' + (n + 1) + ' из ' + queue.length;
+      setProgress(doneBytes / totalBytes, label);
+      q.f.url = await uploadFile(q.f, q.name, sent => setProgress((doneBytes + sent) / totalBytes, label + ' — ' + mb(doneBytes + sent) + ' из ' + mb(totalBytes)));
+      doneBytes += q.f.blob.size;
+      renderFiles(q.key);
+    }
+
+    setProgress(1, 'Сохраняю отчёт в таблицу…');
+    const payload = {
+      reportId: state.reportId, arrival: state.arrival, finish: state.finish, status: getStatus(),
+      devices: state.devices.map(d => {
+        const repl = d.action === 'Заменено';
+        return {
+          type: d.type, action: d.action, ip: (d.ip || '').trim(), model: d.model, mac: (d.mac || '').trim().toUpperCase(),
+          sn: d.sn, place: d.place,
+          oldIp: repl ? (d.oldIp || '').trim() : '', oldModel: repl ? d.oldModel : '',
+          oldMac: repl ? (d.oldMac || '').trim().toUpperCase() : '', oldSn: repl ? d.oldSn : '',
+        };
+      }),
+      files: { before: state.files.before.map(f => f.url), after: state.files.after.map(f => f.url), video: state.files.video.map(f => f.url) },
+      folderUrl: state.folderUrl,
+    };
+    TEXT_FIELDS.forEach(f => payload[f] = $(f).value);
+    const res = await run('submitReport', payload);
+
+    store(DRAFT_KEY, null);
+    $('doneText').textContent = 'Номер отчёта: ' + state.reportId +
+      (payload.ticket ? '. Заявка: ' + payload.ticket : '') + '. Объект: ' + payload.object.trim() + '.' +
+      (res && res.warning ? ' ' + res.warning : '');
+    $('form').classList.add('hidden');
+    $('done').classList.remove('hidden');
+    window.scrollTo(0, 0);
+    refreshRefs();
+  } catch (e) {
+    showErrors(['Не удалось отправить: ' + (e && e.message ? e.message : e) +
+      '. Данные не потеряны. Уже загруженные файлы повторно грузиться не будут — нажмите «Отправить» ещё раз.']);
+  } finally {
+    sending = false;
+    $('sendBtn').disabled = false;
+    $('progress').classList.add('hidden');
+    ['before', 'after', 'video'].forEach(renderFiles);
+  }
+}
+
+function resetForm() {
+  ['before', 'after'].forEach(k => state.files[k].forEach(f => f.thumb && URL.revokeObjectURL(f.thumb)));
+  state = freshState();
+  TEXT_FIELDS.forEach(f => { if (f !== 'fio') $(f).value = ''; });
+  setStatus('');
+  document.querySelectorAll('.bad').forEach(el => el.classList.remove('bad'));
+  store(DRAFT_KEY, null);
+  renderAll();
+  $('draftNote').classList.add('hidden');
+  $('errors').classList.add('hidden');
+  $('done').classList.add('hidden');
+  $('form').classList.remove('hidden');
+  window.scrollTo(0, 0);
+}
+
+function hasUnsentFiles() {
+  return ['before', 'after', 'video'].some(k => state.files[k].some(f => !f.url));
+}
+
+function renderAll() {
+  renderStamp('arrival');
+  renderStamp('finish');
+  renderDevices();
+  ['before', 'after', 'video'].forEach(renderFiles);
+  renderTicketInfo();
+  updateObjHint();
+}
+
+/* ---------- запуск ---------- */
+state = freshState();
+loadRefsCache();
+restoreDraft();
+applyMe();
+renderAll();
+refreshRefs();
+
+// если справочник не загрузился — показываем причину прямо в списке
+const emptyMsg = (list, normal) => () => refs[list].length || !refsError ? normal : 'Справочник не загружен: ' + refsError;
+makeCombo('ticket', ticketItems, it => pickTicket(it.value), emptyMsg('tickets', 'Открытых заявок не найдено'));
+makeCombo('city', cityItems, it => pickCity(it.value), emptyMsg('cities', 'Нет в списке — будет записан как введён'));
+makeCombo('object', objectItems, it => pickObject(it.value), emptyMsg('objects', 'Нет в справочнике — будет записан как введён'));
+
+TEXT_FIELDS.forEach(f => $(f).addEventListener('input', saveDraft));
+$('ticket').addEventListener('input', renderTicketInfo);
+$('ticket').addEventListener('change', () => { const t = findTicket($('ticket').value); if (t) pickTicket(t); else renderTicketInfo(); });
+$('city').addEventListener('change', onCityChanged);
+$('object').addEventListener('input', updateObjHint);
+$('object').addEventListener('change', () => { const o = findObj($('object').value); if (o) pickObject(o); });
+document.querySelectorAll('[data-clear]').forEach(b => b.onclick = () => {
+  const el = $(b.dataset.clear);
+  el.value = '';
+  afterChange();
+  el.focus();
+});
+
+document.querySelectorAll('input[name=status]').forEach(r => r.addEventListener('change', saveDraft));
+$('arrivalBtn').onclick = () => stamp('arrival');
+$('finishBtn').onclick = () => stamp('finish');
+$('addDev').onclick = addDevice;
+$('sendBtn').onclick = send;
+$('againBtn').onclick = () => { resetForm(); refreshRefs(); };
+$('newBtn').onclick = () => { if (confirm('Удалить черновик и начать новый отчёт?')) resetForm(); };
+['before', 'after', 'video'].forEach(setupFileInput);
+
+function updateOnline() { $('offlineNote').classList.toggle('hidden', navigator.onLine); }
+window.addEventListener('online', updateOnline);
+window.addEventListener('offline', updateOnline);
+updateOnline();
+window.addEventListener('beforeunload', e => { if (hasUnsentFiles() || sending) { e.preventDefault(); e.returnValue = ''; } });
+</script>
+</body>
+</html>
