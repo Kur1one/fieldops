@@ -10,6 +10,8 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   output: 'standalone',
   poweredByHeader: false,
+  // открытие dev-сервера с телефона в локальной сети
+  allowedDevOrigins: ['192.168.*.*', '10.*.*.*'],
   serverExternalPackages: ['sharp', 'pdfkit', 'exceljs', 'pg'],
   outputFileTracingIncludes: {
     '/api/tickets/[number]/pdf': ['./assets/fonts/*.ttf'],

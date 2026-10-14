@@ -42,7 +42,7 @@ export const reportSchema = z.object({
   cityId: z.number().int().positive(),
   objectId: z.number().int().positive().nullish(),
   objectName: z.string().max(300).nullish(),
-  address: z.string().trim().min(1, 'заполните адрес').max(LIMITS.shortText),
+  address: z.string().trim().max(LIMITS.shortText).default(''),
   arrival: geoSchema,
   finish: geoSchema,
   task: z.string().trim().min(1, 'заполните описание задачи').max(LIMITS.longText),

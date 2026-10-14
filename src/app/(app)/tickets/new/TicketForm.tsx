@@ -82,7 +82,6 @@ export function TicketForm() {
     const e: string[] = [];
     if (!f.cityId) e.push(f.cityText ? 'Город: выберите из списка' : 'Заполните «Город»');
     if (!f.objectId && !f.objectText.trim()) e.push('Заполните «Объект»');
-    if (!f.address.trim()) e.push('Заполните «Адрес»');
     if (!f.description.trim()) e.push('Заполните «Описание задачи»');
     if (f.assigneeText.trim() && !f.assigneeId) e.push('Исполнитель: выберите из списка');
     if (f.plannedDate && f.plannedDate < today) e.push('Плановая дата не может быть раньше сегодняшней');
@@ -181,8 +180,8 @@ export function TicketForm() {
         </div>
       )}
 
-      <label className="label" htmlFor="addr">Адрес *</label>
-      <textarea id="addr" rows={2} className={`input ${bad(!f.address.trim())}`} value={f.address} onChange={e => set({ address: e.target.value })} maxLength={LIMITS.shortText} />
+      <label className="label" htmlFor="addr">Адрес</label>
+      <textarea id="addr" rows={2} className="input" value={f.address} onChange={e => set({ address: e.target.value })} maxLength={LIMITS.shortText} />
 
       <label className="label" htmlFor="desc">Описание задачи / проблемы *</label>
       <textarea id="desc" rows={5} className={`input ${bad(!f.description.trim())}`} value={f.description}

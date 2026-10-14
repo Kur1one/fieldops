@@ -295,7 +295,6 @@ export function ReportForm() {
     if (!d.ticketNumber && d.ticketText?.trim()) e.push('Заявка: выберите из списка или очистите поле');
     if (!d.cityId) e.push(d.cityText.trim() ? 'Город: выберите из списка' : 'Заполните «Город»');
     if (!d.objectId && !d.objectText.trim()) e.push('Заполните «Объект»');
-    if (!d.address.trim()) e.push('Заполните «Адрес»');
     if (!d.task.trim()) e.push('Заполните «Описание проблемы / задачи»');
     if (!d.workReport.trim()) e.push('Заполните «Отчёт о проделанной работе»');
     if (d.workReport.length > LIMITS.workReport) e.push(`Отчёт о работе длиннее ${LIMITS.workReport} символов`);
@@ -499,8 +498,8 @@ export function ReportForm() {
         />
         {!objKnown && <p className="hint text-amber-700">Объекта нет в справочнике — он будет добавлен.</p>}
 
-        <label className="label" htmlFor="address">Адрес *</label>
-        <textarea id="address" rows={2} className={`input ${fieldBad(!draft.address.trim())}`} value={draft.address}
+        <label className="label" htmlFor="address">Адрес</label>
+        <textarea id="address" rows={2} className="input" value={draft.address}
           onChange={e => setDraft(d => ({ ...d, address: e.target.value }))} maxLength={LIMITS.shortText} />
       </section>
 

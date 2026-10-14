@@ -64,7 +64,7 @@ export default async function TicketPage({ params }: { params: Promise<{ number:
         <dl className="grid gap-x-6 gap-y-2 text-[15px] sm:grid-cols-[180px_1fr]">
           <Row k="Город">{card.cityName}</Row>
           <Row k="Объект"><Link className="link" href={`/objects/${card.objectId}`}>{card.objectName}</Link></Row>
-          <Row k="Адрес">{tk.address} · <a className="link text-sm" href={addressMapLink(tk.address)} target="_blank" rel="noreferrer">Открыть на карте</a></Row>
+          <Row k="Адрес">{tk.address ? <>{tk.address} · <a className="link text-sm" href={addressMapLink(tk.address)} target="_blank" rel="noreferrer">Открыть на карте</a></> : '—'}</Row>
           <Row k="Задача"><span className="whitespace-pre-wrap">{tk.description}</span></Row>
           {tk.contact && <Row k="Контакт на объекте">{tk.contact}</Row>}
           {tk.note && <Row k="Примечание"><span className="whitespace-pre-wrap">{tk.note}</span></Row>}
@@ -124,7 +124,7 @@ export default async function TicketPage({ params }: { params: Promise<{ number:
                 </div>
 
                 <dl className="mt-3 grid gap-x-6 gap-y-2 text-[15px] sm:grid-cols-[180px_1fr]">
-                  {(r.objectName !== card.objectName || r.address !== tk.address) && <Row k="Объект в отчёте">{r.objectName}, {r.address}</Row>}
+                  {(r.objectName !== card.objectName || r.address !== tk.address) && <Row k="Объект в отчёте">{[r.objectName, r.address].filter(Boolean).join(', ')}</Row>}
                   <Row k="Задача"><span className="whitespace-pre-wrap">{r.task}</span></Row>
                   <Row k="Отчёт о работе"><span className="whitespace-pre-wrap">{r.workReport}</span></Row>
                   {r.materials && <Row k="Материалы"><span className="whitespace-pre-wrap">{r.materials}</span></Row>}

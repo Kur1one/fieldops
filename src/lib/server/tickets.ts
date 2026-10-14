@@ -102,7 +102,7 @@ export const createTicketSchema = z.object({
   cityId: z.number().int().positive(),
   objectId: z.number().int().positive().nullish(),
   objectName: z.string().max(300).nullish(),
-  address: z.string().trim().min(1, 'заполните адрес').max(LIMITS.shortText),
+  address: z.string().trim().max(LIMITS.shortText).default(''),
   description: z.string().trim().min(1, 'заполните описание').max(LIMITS.ticketDescription),
   priorityId: z.number().int().positive().nullish(),
   assigneeId: z.number().int().positive().nullish(),
